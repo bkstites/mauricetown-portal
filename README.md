@@ -34,3 +34,28 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Delivery Pipeline
+
+This repo now includes a multi-lane PR pipeline:
+
+- Development and test lane: `.github/workflows/ci.yml`
+- Security lane: `.github/workflows/security.yml`
+- Design and release checklist: `.github/pull_request_template.md`
+
+### How to use it
+
+1. Open a pull request from a feature branch.
+2. Wait for `CI` and `Security` checks to complete.
+3. Complete the design, security, and deployment checklist in the PR template.
+4. Merge only after all checks are green.
+
+### Recommended branch protection
+
+In GitHub repository settings, add branch protection on `main` and require these status checks:
+
+- `CI / quality`
+- `Security / dependency-audit`
+- `Security / secret-scan`
+
+In Vercel, keep production deploys limited to merges into `main`.
