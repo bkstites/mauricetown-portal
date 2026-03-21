@@ -50,6 +50,8 @@ This repo now includes a multi-lane PR pipeline:
 3. Complete the design, security, and deployment checklist in the PR template.
 4. Merge only after all checks are green.
 
+Initial status-check bootstrap completed for branch-protection setup.
+
 ### Recommended branch protection
 
 In GitHub repository settings, add branch protection on `main` and require these status checks:
