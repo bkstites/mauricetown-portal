@@ -41,14 +41,25 @@ This repo now includes a multi-lane PR pipeline:
 
 - Development and test lane: `.github/workflows/ci.yml`
 - Security lane: `.github/workflows/security.yml`
+- E2E / UI testing lane: `.github/workflows/e2e-tests.yml`
 - Design and release checklist: `.github/pull_request_template.md`
 
 ### How to use it
 
 1. Open a pull request from a feature branch.
-2. Wait for `CI` and `Security` checks to complete.
-3. Complete the design, security, and deployment checklist in the PR template.
-4. Merge only after all checks are green.
+2. Wait for `CI`, `Security`, and `E2E Tests` checks to complete.
+3. View E2E test results in the PR (Playwright report).
+4. Complete the design, security, E2E, and deployment checklist in the PR template.
+5. Merge only after all checks are green.
+
+### Running tests locally
+
+```bash
+npm run test:e2e              # Run all E2E tests headlessly
+npm run test:e2e:ui          # Run E2E tests in UI mode (interactive)
+npm run lint                  # Lint code
+npm run build                 # Build for production
+```
 
 Initial status-check bootstrap completed for branch-protection setup.
 
@@ -59,5 +70,6 @@ In GitHub repository settings, add branch protection on `main` and require these
 - `CI / quality`
 - `Security / dependency-audit`
 - `Security / secret-scan`
+- `E2E Tests / ui-tests`
 
 In Vercel, keep production deploys limited to merges into `main`.

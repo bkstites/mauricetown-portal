@@ -6,8 +6,18 @@ Describe what changed and why.
 
 - [ ] `npm run lint`
 - [ ] `npm run test --if-present`
+- [ ] `npm run test:e2e` (all E2E tests pass)
 - [ ] `npm run build`
 - [ ] Manual smoke test done in Preview deployment
+
+## E2E Testing Checklist
+
+- [ ] All buttons are clickable and functional
+- [ ] Form fields have proper validation
+- [ ] Navigation links work as expected
+- [ ] If adding auth flow: register/login tested
+- [ ] If database changes: data writes/reads verified
+- [ ] Error states properly displayed
 
 ## Security Review
 
@@ -23,6 +33,7 @@ Describe what changed and why.
 - [ ] Color contrast and readability checked
 - [ ] Keyboard navigation and focus states checked
 - [ ] Empty/error/loading states checked
+- [ ] Test results from Playwright confirm UI accuracy
 
 ## Deployment Notes
 
