@@ -11,10 +11,10 @@ test('Home: Register link visible', async ({ page }) => {
   await expect(registerLink).toBeVisible()
 })
 
-test('Home: Login link visible', async ({ page }) => {
+test('Home: Sign in link visible', async ({ page }) => {
   await page.goto('/')
-  const loginLink = page.locator('a:has-text("Login"), button:has-text("Sign")')
-  await expect(loginLink.first()).toBeVisible()
+  const signInLink = page.getByRole('link', { name: /sign in/i })
+  await expect(signInLink.first()).toBeVisible()
 })
 
 test('Home: Page contains navigation elements', async ({ page }) => {

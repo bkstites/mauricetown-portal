@@ -18,8 +18,8 @@ test('Register: Submit button clickable', async ({ page }) => {
   await expect(submitBtn).toBeVisible()
 })
 
-test('Register: Sign in link present and clickable', async ({ page }) => {
+test('Register: Sign in link present', async ({ page }) => {
   await page.goto('/register')
-  const signInLink = page.locator('a:has-text("Sign in")')
-  await expect(signInLink).toBeVisible()
+  const signInLink = page.getByRole('link', { name: /sign in/i })
+  await expect(signInLink.first()).toBeVisible()
 })
