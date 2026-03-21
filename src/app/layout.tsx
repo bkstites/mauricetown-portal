@@ -4,7 +4,6 @@ import './globals.css'
 import Nav from '@/components/nav'
 import { cookies } from 'next/headers'
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
-import { prisma } from '@/lib/prisma'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
@@ -21,6 +20,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     const supabase = createServerComponentClient({ cookies })
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
+      const { prisma } = await import('@/lib/prisma')
       const dbUser = await prisma.user.findUnique({ where: { email: user.email! } })
       userRole = dbUser?.role ?? 'CUSTOMER'
       userName = dbUser?.name ?? user.email ?? null
