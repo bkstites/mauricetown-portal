@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
 
 export async function POST(req: NextRequest) {
   try {
     const { email, name, company, phone } = await req.json()
+    const { prisma } = await import('@/lib/prisma')
     const user = await prisma.user.create({
       data: { email, name, company, phone },
     })
