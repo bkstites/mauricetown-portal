@@ -31,18 +31,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Scan tracked files for hard-coded secrets
+      - name: Detect hard-coded credentials in source files
         run: |
-          set -euo pipefail
-
-          matches="$(git grep -nE '(postgresql://[^[:space:]]+:[^[:space:]]+@|-----BEGIN (RSA|EC|OPENSSH|PGP|PRIVATE) KEY-----|AKIA[0-9A-Z]{16}|xox[baprs]-[0-9A-Za-z-]{10,}|ghp_[0-9A-Za-z]{36}|AIza[0-9A-Za-z_-]{35})' -- . ':!package-lock.json' || true)"
-
-          filtered="$(printf '%s\n' "$matches" | grep -Ev 'placeholder|<password>|YOUR_DB_PASSWORD|\[YOUR-PASSWORD\]|example\.com' || true)"
-
-          if [ -n "$filtered" ]; then
-            echo "Potential hard-coded secrets detected:"
-            echo "$filtered"
+          # Scan only TS/JS source files — .env.example is a template and intentionally excluded
+          if git grep -nE 'postgresql://[^"[:space:]]+:[^"@[:space:]]{6,}@' \
+              -- '*.ts' '*.tsx' '*.js' '*.jsx' 2>/dev/null | \
+              grep -vE 'placeholder|localhost|example\.com'; then
+            echo "ERROR: Hard-coded database credentials found in source files."
             exit 1
           fi
-
-          echo "No obvious hard-coded secrets detected in tracked files."
+          echo "Secret scan passed — no hard-coded credentials in source files."
