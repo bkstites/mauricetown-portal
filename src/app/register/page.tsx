@@ -8,6 +8,7 @@ import { Truck } from 'lucide-react'
 
 export default function RegisterPage() {
   const [form, setForm] = useState({ name: '', company: '', email: '', phone: '', password: '' })
+  const [mfaOptIn, setMfaOptIn] = useState(true)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
@@ -44,7 +45,7 @@ export default function RegisterPage() {
       return
     }
 
-    router.push('/inventory')
+    router.push('/request-quote')
     router.refresh()
   }
 
@@ -82,6 +83,24 @@ export default function RegisterPage() {
                 />
               </div>
             ))}
+
+            <div className="rounded-md border border-blue-200 bg-blue-50 p-3">
+              <label className="flex items-start gap-2 text-sm text-[#1B3A6B]">
+                <input
+                  type="checkbox"
+                  checked={mfaOptIn}
+                  onChange={e => setMfaOptIn(e.target.checked)}
+                  className="mt-0.5"
+                />
+                <span>
+                  Enable MFA on this account (recommended).
+                  <span className="block text-xs text-blue-700 mt-1">
+                    You will be prompted to enroll an authenticator app during secure onboarding.
+                  </span>
+                </span>
+              </label>
+            </div>
+
             {error && <p className="text-red-600 text-sm bg-red-50 border border-red-200 rounded px-3 py-2">{error}</p>}
             <button
               type="submit"
