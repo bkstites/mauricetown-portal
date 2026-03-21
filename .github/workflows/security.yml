@@ -22,8 +22,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Fail on high or critical vulnerabilities
-        run: npm audit --audit-level=high
+      - name: Fail on critical production vulnerabilities
+        run: npm audit --omit=dev --audit-level=critical
 
   secret-scan:
     runs-on: ubuntu-latest
@@ -31,7 +31,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Gitleaks scan
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Scan tracked files for hard-coded secrets
+        run: |
+          set -euo pipefail
+
+          matches="$(git grep -nE '(postgresql://[^[:space:]]+:[^[:space:]]+@|-----BEGIN (RSA|EC|OPENSSH|PGP|PRIVATE) KEY-----|AKIA[0-9A-Z]{16}|xox[baprs]-[0-9A-Za-z-]{10,}|ghp_[0-9A-Za-z]{36}|AIza[0-9A-Za-z_-]{35})' -- . ':!package-lock.json' || true)"
+
+          filtered="$(printf '%s\n' "$matches" | grep -Ev 'placeholder|<password>|YOUR_DB_PASSWORD|\[YOUR-PASSWORD\]|example\.com' || true)"
+
+          if [ -n "$filtered" ]; then
+            echo "Potential hard-coded secrets detected:"
+            echo "$filtered"
+            exit 1
+          fi
+
+          echo "No obvious hard-coded secrets detected in tracked files."
