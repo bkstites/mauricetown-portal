@@ -70,19 +70,23 @@ export default function RequestQuotePage() {
     setError('')
 
     try {
-      const generatedId = `MTQ-${Date.now().toString().slice(-8)}`
-      const saved = {
-        ...form,
-        requestId: generatedId,
-        submittedAt: new Date().toISOString(),
+      const res = await fetch('/api/quote-requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      })
+
+      if (!res.ok) {
+        const payload = await res.json()
+        throw new Error(payload.error || 'Failed to submit quote request')
       }
 
-      const existing = JSON.parse(localStorage.getItem('mt_quote_requests') || '[]') as Array<Record<string, string>>
-      localStorage.setItem('mt_quote_requests', JSON.stringify([saved, ...existing]))
-      setRequestId(generatedId)
+      const payload = await res.json()
+      setRequestId(payload.requestNumber)
       setForm(initialForm)
-    } catch {
-      setError('Unable to save your request right now. Please try again.')
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unable to save your request right now. Please try again.'
+      setError(message)
     } finally {
       setLoading(false)
     }
@@ -206,9 +210,7 @@ export default function RequestQuotePage() {
           {error && <p className="text-red-700 text-sm bg-red-50 border border-red-200 rounded-md px-3 py-2">{error}</p>}
 
           <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between pt-2">
-            <p className="text-xs text-gray-500">
-              POC note: this first release stores requests on the client while backend queue integration is finalized.
-            </p>
+            <p className="text-xs text-gray-500">After submission, associates receive this request in the quote queue for review and pricing.</p>
             <button
               type="submit"
               disabled={loading || !isValid}
