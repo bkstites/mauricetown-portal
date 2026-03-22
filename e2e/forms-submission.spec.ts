@@ -12,10 +12,10 @@ test('Register form submission with valid data', async ({ page }) => {
   const timestamp = Date.now()
   const email = `test${timestamp}@example.com`
   
-  await page.fill('input[placeholder*="John Smith"]', 'Test User')
-  await page.fill('input[placeholder*="Company"]', 'Test Company')
+  await page.fill('input[placeholder="John Smith"]', 'Test User')
+  await page.fill('input[placeholder="Smith Trucking LLC"]', 'Test Company')
   await page.fill('input[type="email"]', email)
-  await page.fill('input[placeholder*="(856)"]', '2159839993')
+  await page.fill('input[placeholder="(856) 555-0100"]', '2159839993')
   await page.fill('input[type="password"]', 'TestPassword123!')
   
   // Submit form
@@ -30,19 +30,19 @@ test('Register form submission with valid data', async ({ page }) => {
 test('Register form - shows error on invalid email format', async ({ page }) => {
   await page.goto('/register')
   
-  await page.fill('input[placeholder*="John Smith"]', 'Test User')
-  await page.fill('input[placeholder*="Company"]', 'Test Company')
+  await page.fill('input[placeholder="John Smith"]', 'Test User')
+  await page.fill('input[placeholder="Smith Trucking LLC"]', 'Test Company')
   await page.fill('input[type="email"]', 'invalid-email-format')
-  await page.fill('input[placeholder*="(856)"]', '2159839993')
+  await page.fill('input[placeholder="(856) 555-0100"]', '2159839993')
   await page.fill('input[type="password"]', 'TestPassword123!')
   
   const submitBtn = page.locator('button:has-text("Create Account")')
   await submitBtn.click()
   
-  // Check for validation error or email field invalid state
+  // Check browser-level input validation state
   const emailInput = page.locator('input[type="email"]')
   const validity = await emailInput.evaluate((el: HTMLInputElement) => !el.checkValidity?.())
-  expect(validity || await page.locator('text=/error|invalid/i').count()).toBeGreaterThan(0)
+  expect(validity).toBe(true)
 })
 
 test('Login form submission with valid email format', async ({ page }) => {

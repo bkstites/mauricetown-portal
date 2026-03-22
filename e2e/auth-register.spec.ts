@@ -8,7 +8,11 @@ test('Register: Form loads', async ({ page }) => {
 test('Register: All form fields present', async ({ page }) => {
   await page.goto('/register')
   const inputs = page.locator('input')
-  await expect(inputs).toHaveCount(5) // name, company, email, phone, password
+  await expect(inputs).toHaveCount(6) // name, company, email, phone, password, MFA checkbox
+  await expect(page.locator('input[placeholder="John Smith"]')).toBeVisible()
+  await expect(page.locator('input[placeholder="Smith Trucking LLC"]')).toBeVisible()
+  await expect(page.locator('input[type="email"]')).toBeVisible()
+  await expect(page.locator('input[type="password"]')).toBeVisible()
 })
 
 test('Register: Submit button clickable', async ({ page }) => {

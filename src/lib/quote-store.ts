@@ -1,4 +1,6 @@
 import { prisma } from '@/lib/prisma'
+import fs from 'node:fs'
+import path from 'node:path'
 
 export type QuoteRequestInput = {
   contactName: string
@@ -37,6 +39,8 @@ type QuoteRequestPatch = {
 }
 
 const memoryKey = '__mt_quote_requests__'
+const fallbackDir = path.join(process.cwd(), '.tmp')
+const fallbackFile = path.join(fallbackDir, 'quote-requests.json')
 
 function getMemoryStore(): QuoteRequestRecord[] {
   const g = globalThis as typeof globalThis & { [memoryKey]?: QuoteRequestRecord[] }
@@ -44,6 +48,42 @@ function getMemoryStore(): QuoteRequestRecord[] {
     g[memoryKey] = []
   }
   return g[memoryKey]!
+}
+
+function readFallbackStore(): QuoteRequestRecord[] {
+  try {
+    const inMemory = getMemoryStore()
+    if (inMemory.length > 0) {
+      return inMemory
+    }
+
+    if (!fs.existsSync(fallbackFile)) {
+      return []
+    }
+
+    const raw = fs.readFileSync(fallbackFile, 'utf8')
+    const parsed = JSON.parse(raw)
+    if (!Array.isArray(parsed)) {
+      return []
+    }
+
+    const store = getMemoryStore()
+    store.splice(0, store.length, ...parsed)
+    return store
+  } catch {
+    return []
+  }
+}
+
+function writeFallbackStore(rows: QuoteRequestRecord[]) {
+  try {
+    if (!fs.existsSync(fallbackDir)) {
+      fs.mkdirSync(fallbackDir, { recursive: true })
+    }
+    fs.writeFileSync(fallbackFile, JSON.stringify(rows, null, 2), 'utf8')
+  } catch {
+    // Ignore write errors in fallback mode.
+  }
 }
 
 function generateRequestNumber() {
@@ -141,8 +181,9 @@ export async function createQuoteRequest(input: QuoteRequestInput): Promise<Quot
       quotedAt: null,
       createdAt: new Date().toISOString(),
     }
-    const store = getMemoryStore()
+    const store = readFallbackStore()
     store.unshift(record)
+    writeFallbackStore(store)
     return record
   }
 }
@@ -155,7 +196,7 @@ export async function listQuoteRequests(status?: string): Promise<QuoteRequestRe
     })
     return rows.map(serializeDbRecord)
   } catch {
-    const store = getMemoryStore()
+    const store = readFallbackStore()
     if (!status || status === 'ALL') {
       return store
     }
@@ -168,7 +209,7 @@ export async function getQuoteRequestById(id: string): Promise<QuoteRequestRecor
     const row = await prisma.quoteRequest.findUnique({ where: { id } })
     return row ? serializeDbRecord(row) : null
   } catch {
-    const store = getMemoryStore()
+    const store = readFallbackStore()
     return store.find(r => r.id === id) ?? null
   }
 }
@@ -186,7 +227,7 @@ export async function updateQuoteRequestById(id: string, patch: QuoteRequestPatc
     })
     return serializeDbRecord(updated)
   } catch {
-    const store = getMemoryStore()
+    const store = readFallbackStore()
     const idx = store.findIndex(r => r.id === id)
     if (idx === -1) {
       return null
@@ -201,6 +242,7 @@ export async function updateQuoteRequestById(id: string, patch: QuoteRequestPatc
       quotedAt: patch.status === 'QUOTED' ? new Date().toISOString() : existing.quotedAt,
     }
     store[idx] = next
+    writeFallbackStore(store)
     return next
   }
 }
