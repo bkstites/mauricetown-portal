@@ -48,6 +48,14 @@ export default function RequestQuotePage() {
   const [error, setError] = useState('')
   const [requestId, setRequestId] = useState('')
 
+  const requiredFieldLabels: Record<'contactName' | 'shopName' | 'email' | 'partsNeeded' | 'repairContext', string> = {
+    contactName: 'Contact Name',
+    shopName: 'Shop / Fleet Name',
+    email: 'Email',
+    partsNeeded: 'Parts Needed',
+    repairContext: 'Repair Context',
+  }
+
   useEffect(() => {
     let active = true
 
@@ -85,14 +93,32 @@ export default function RequestQuotePage() {
     )
   }, [form])
 
+  const missingRequiredFields = useMemo(() => {
+    return (Object.keys(requiredFieldLabels) as Array<keyof typeof requiredFieldLabels>).filter(field => !form[field].trim())
+  }, [form])
+
   const update = (field: keyof QuoteForm, value: string) => {
     setForm(prev => ({ ...prev, [field]: value }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!isValid) {
-      setError('Please complete all required fields.')
+
+    if (!authReady) {
+      setError('Account details are still loading. Please try again in a moment.')
+      return
+    }
+
+    if (missingRequiredFields.length > 0) {
+      const firstMissingField = missingRequiredFields[0]
+      setError(`Please complete the required fields: ${missingRequiredFields.map(field => requiredFieldLabels[field]).join(', ')}.`)
+
+      if (typeof document !== 'undefined') {
+        const target = document.getElementById(firstMissingField)
+        target?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        target?.focus()
+      }
+
       return
     }
 
@@ -113,7 +139,13 @@ export default function RequestQuotePage() {
 
       const payload = await res.json()
       setRequestId(payload.requestNumber)
-      setForm(initialForm)
+      setForm(prev => ({
+        ...initialForm,
+        contactName: prev.contactName,
+        email: prev.email,
+        phone: prev.phone,
+        shopName: prev.shopName,
+      }))
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Unable to save your request right now. Please try again.'
       setError(message)
@@ -146,7 +178,7 @@ export default function RequestQuotePage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-xl shadow-sm p-6 md:p-8 space-y-6">
+        <form noValidate onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-xl shadow-sm p-6 md:p-8 space-y-6">
           <section>
             <h2 className="text-lg font-semibold text-[#1B3A6B] mb-4">Contact Information</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -249,10 +281,17 @@ export default function RequestQuotePage() {
           {error && <p className="text-red-700 text-sm bg-red-50 border border-red-200 rounded-md px-3 py-2">{error}</p>}
 
           <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between pt-2">
-            <p className="text-xs text-gray-500">After submission, associates receive this request in the quote queue for review and pricing.</p>
+            <div>
+              <p className="text-xs text-gray-500">After submission, associates receive this request in the quote queue for review and pricing.</p>
+              {missingRequiredFields.length > 0 && (
+                <p className="mt-1 text-xs text-amber-700">
+                  Required before submit: {missingRequiredFields.map(field => requiredFieldLabels[field]).join(', ')}.
+                </p>
+              )}
+            </div>
             <button
               type="submit"
-              disabled={loading || !authReady || !isValid}
+              disabled={loading || !authReady}
               className="bg-[#1B3A6B] hover:bg-[#2E6DB4] text-white font-semibold px-6 py-3 rounded-md transition-colors disabled:opacity-60"
             >
               {loading ? 'Submitting…' : 'Submit Quote Request'}
