@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { Truck } from 'lucide-react'
 
@@ -12,7 +12,30 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
   const supabase = createClientComponentClient()
+  const nextPath = searchParams.get('next') || '/request-quote'
+
+  useEffect(() => {
+    let active = true
+
+    const redirectIfSignedIn = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      if (active && user) {
+        router.replace(nextPath)
+        router.refresh()
+      }
+    }
+
+    redirectIfSignedIn()
+
+    return () => {
+      active = false
+    }
+  }, [nextPath, router, supabase.auth])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -24,7 +47,7 @@ export default function LoginPage() {
       setError(error.message)
       setLoading(false)
     } else {
-      router.push('/request-quote')
+      router.replace(nextPath)
       router.refresh()
     }
   }
