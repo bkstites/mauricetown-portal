@@ -33,8 +33,7 @@ function RegisterPageContent() {
       } = await supabase.auth.getUser()
 
       if (active && user) {
-        router.replace(nextPath)
-        router.refresh()
+        window.location.replace(nextPath)
       }
     }
 
@@ -76,8 +75,7 @@ function RegisterPageContent() {
       return
     }
 
-    router.replace(nextPath)
-    router.refresh()
+    window.location.assign(nextPath)
   }
 
   return (

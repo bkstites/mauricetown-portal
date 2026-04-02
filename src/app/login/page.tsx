@@ -33,8 +33,7 @@ function LoginPageContent() {
       } = await supabase.auth.getUser()
 
       if (active && user) {
-        router.replace(nextPath)
-        router.refresh()
+        window.location.replace(nextPath)
       }
     }
 
@@ -55,8 +54,7 @@ function LoginPageContent() {
       setError(error.message)
       setLoading(false)
     } else {
-      router.replace(nextPath)
-      router.refresh()
+      window.location.assign(nextPath)
     }
   }
 
