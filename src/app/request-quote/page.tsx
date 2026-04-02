@@ -40,6 +40,14 @@ const initialForm: QuoteForm = {
   repairContext: '',
 }
 
+const requiredFieldLabels: Record<'contactName' | 'shopName' | 'email' | 'partsNeeded' | 'repairContext', string> = {
+  contactName: 'Contact Name',
+  shopName: 'Shop / Fleet Name',
+  email: 'Email',
+  partsNeeded: 'Parts Needed',
+  repairContext: 'Repair Context',
+}
+
 export default function RequestQuotePage() {
   const supabase = createClientComponentClient()
   const [form, setForm] = useState<QuoteForm>(initialForm)
@@ -47,14 +55,6 @@ export default function RequestQuotePage() {
   const [authReady, setAuthReady] = useState(false)
   const [error, setError] = useState('')
   const [requestId, setRequestId] = useState('')
-
-  const requiredFieldLabels: Record<'contactName' | 'shopName' | 'email' | 'partsNeeded' | 'repairContext', string> = {
-    contactName: 'Contact Name',
-    shopName: 'Shop / Fleet Name',
-    email: 'Email',
-    partsNeeded: 'Parts Needed',
-    repairContext: 'Repair Context',
-  }
 
   useEffect(() => {
     let active = true
@@ -82,16 +82,6 @@ export default function RequestQuotePage() {
       active = false
     }
   }, [supabase.auth])
-
-  const isValid = useMemo(() => {
-    return Boolean(
-      form.contactName.trim() &&
-        form.shopName.trim() &&
-        form.email.trim() &&
-        form.partsNeeded.trim() &&
-        form.repairContext.trim(),
-    )
-  }, [form])
 
   const missingRequiredFields = useMemo(() => {
     return (Object.keys(requiredFieldLabels) as Array<keyof typeof requiredFieldLabels>).filter(field => !form[field].trim())
