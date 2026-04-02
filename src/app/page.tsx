@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Package, ClipboardList, FileText, Truck, Shield, Clock } from 'lucide-react'
+import { ClipboardList, FileText, Truck, Shield, Clock, Wrench, PhoneCall } from 'lucide-react'
 
 export default function LandingPage() {
   return (
@@ -10,17 +10,17 @@ export default function LandingPage() {
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 bg-blue-800 rounded-full px-3 py-1 text-sm mb-6">
               <Truck className="h-4 w-4" />
-              <span>Authorized PAI Industries Distributor</span>
+              <span>Family Owned Since 1979</span>
             </div>
             <h1 className="text-4xl md:text-5xl font-bold leading-tight mb-4">
-              Heavy-Duty Truck Parts,<br />Ordered Online — 24/7
+              Heavy-Duty Diesel Parts Quote Requests,<br />Without Phone Tag
             </h1>
             <p className="text-xl text-blue-200 mb-8">
-              Browse our full PAI Industries inventory, submit orders, and receive competitive quotes from our team. No phone tag. No waiting.
+              Tell us what parts you need, add vehicle and engine details, and send a complete request to our quote desk in minutes.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Link href="/inventory" className="bg-[#2E6DB4] hover:bg-blue-500 text-white font-semibold px-8 py-3 rounded-md text-center transition-colors">
-                Browse Parts
+              <Link href="/request-quote" className="bg-[#2E6DB4] hover:bg-blue-500 text-white font-semibold px-8 py-3 rounded-md text-center transition-colors">
+                Start A Quote Request
               </Link>
               <Link href="/register" className="bg-white text-[#1B3A6B] font-semibold px-8 py-3 rounded-md text-center hover:bg-blue-50 transition-colors">
                 Create Account
@@ -32,12 +32,12 @@ export default function LandingPage() {
 
       {/* Feature cards */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <h2 className="text-2xl font-bold text-[#1B3A6B] text-center mb-10">How It Works</h2>
+        <h2 className="text-2xl font-bold text-[#1B3A6B] text-center mb-10">How Quote Requests Work</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[
-            { icon: Package, title: 'Browse Inventory', desc: 'Search our full PAI Industries catalog by part number, description, or category. Real-time availability.' },
-            { icon: ClipboardList, title: 'Submit Orders', desc: 'Add parts to your order, include notes, and choose pickup or direct ship. Submit in minutes.' },
-            { icon: FileText, title: 'Receive & Approve Quotes', desc: 'Our team reviews and prices your order within 1 business day. Approve online or call us.' },
+            { icon: ClipboardList, title: 'Submit Detailed Request', desc: 'Include truck details, part numbers, urgency, and any notes our parts team needs to quote accurately.' },
+            { icon: Wrench, title: 'Technician Review', desc: 'Our quote desk researches fitment and options for new, used, or reman parts.' },
+            { icon: FileText, title: 'Receive Quote By Email', desc: 'We send back a finalized quote you can review, approve, and schedule for pickup or delivery.' },
           ].map(({ icon: Icon, title, desc }) => (
             <div key={title} className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
               <div className="bg-blue-50 rounded-lg p-3 w-fit mb-4">
@@ -55,9 +55,9 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
             {[
-              { icon: Shield, title: 'Authorized Distributor', desc: 'Genuine PAI Industries parts with full manufacturer warranty.' },
-              { icon: Clock, title: '1 Business Day Quotes', desc: 'Our team reviews and prices every order within one business day.' },
-              { icon: Truck, title: 'Pickup or Direct Ship', desc: 'Pick up at our Mauricetown location or ship direct from PAI.' },
+              { icon: Shield, title: 'Legacy Of Reliability', desc: 'Trusted by diesel shops for over four decades in Southern New Jersey.' },
+              { icon: Clock, title: 'Fast Quote Turnaround', desc: 'Requests are triaged quickly so technicians can keep repairs moving.' },
+              { icon: Truck, title: 'New, Used, And Reman Options', desc: 'Flexible sourcing across prime diesel components and assemblies.' },
             ].map(({ icon: Icon, title, desc }) => (
               <div key={title} className="flex flex-col items-center">
                 <Icon className="h-8 w-8 text-[#2E6DB4] mb-3" />
@@ -69,12 +69,31 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Service strip */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="bg-white border border-gray-200 rounded-xl p-6 md:p-8">
+          <h2 className="text-xl font-bold text-[#1B3A6B] mb-4">What We Source Every Day</h2>
+          <p className="text-gray-600 mb-5">
+            Heavy duty clutches, turbochargers, overhaul kits, transmissions, hoods, power steering boxes, and supporting engine components.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Link href="/request-quote" className="bg-[#1B3A6B] hover:bg-[#2E6DB4] text-white font-semibold px-6 py-3 rounded-md text-center transition-colors">
+              Request A Quote
+            </Link>
+            <a href="tel:+18567853222" className="border border-gray-300 text-gray-700 hover:border-[#2E6DB4] hover:text-[#1B3A6B] font-semibold px-6 py-3 rounded-md text-center transition-colors inline-flex justify-center items-center gap-2">
+              <PhoneCall className="h-4 w-4" />
+              Call (856) 785-3222
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
-        <h2 className="text-2xl font-bold text-[#1B3A6B] mb-3">Ready to Order?</h2>
-        <p className="text-gray-600 mb-6">Create a free account and browse our full PAI Industries inventory.</p>
+        <h2 className="text-2xl font-bold text-[#1B3A6B] mb-3">Start With A Simple, Secure POC</h2>
+        <p className="text-gray-600 mb-6">Create your account, submit requests online, and let our team return finalized quotes by email.</p>
         <Link href="/register" className="bg-[#1B3A6B] hover:bg-[#2E6DB4] text-white font-semibold px-8 py-3 rounded-md inline-block transition-colors">
-          Get Started — It&apos;s Free
+          Create Account
         </Link>
       </section>
     </div>

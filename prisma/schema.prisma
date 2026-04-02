@@ -52,6 +52,31 @@ model OrderItem {
   quotedPrice Decimal?
 }
 
+model QuoteRequest {
+  id                 String      @id @default(cuid())
+  requestNumber      String      @unique
+  contactName        String
+  shopName           String
+  email              String
+  phone              String?
+  vehicleYear        String?
+  vehicleMake        String?
+  vehicleModel       String?
+  vin                String?
+  engineModel        String?
+  urgency            String
+  neededBy           String?
+  preferredCondition String
+  deliveryMethod     String
+  partsNeeded        String
+  repairContext      String
+  status             OrderStatus @default(PENDING)
+  quoteTotal         Decimal?
+  quoteNotes         String?
+  quotedAt           DateTime?
+  createdAt          DateTime    @default(now())
+}
+
 enum Role {
   CUSTOMER
   STAFF

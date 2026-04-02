@@ -59,7 +59,34 @@ npm run test:e2e              # Run all E2E tests headlessly
 npm run test:e2e:ui          # Run E2E tests in UI mode (interactive)
 npm run lint                  # Lint code
 npm run build                 # Build for production
+npm run validate:pr           # Run the same local gate you should use before opening a PR
 ```
+
+### Pre-PR validation
+
+Before opening a PR, run:
+
+```bash
+npm run validate:pr
+```
+
+This runs the practical local gate in the same order the repo expects:
+
+1. Lint
+2. Production build
+3. Playwright E2E suite
+4. Critical production dependency audit
+5. Source-level secret scan for hard-coded database credentials
+
+If you changed database schema or auth flows, also validate these explicitly:
+
+```bash
+npx prisma migrate deploy
+git diff --check
+git status --short
+```
+
+Use `git status --short` to confirm `.env.local` is not part of the PR. This repo already ignores local env files.
 
 Initial status-check bootstrap completed for branch-protection setup.
 
@@ -73,3 +100,67 @@ In GitHub repository settings, add branch protection on `main` and require these
 - `E2E Tests / ui-tests`
 
 In Vercel, keep production deploys limited to merges into `main`.
+
+## Database Setup
+
+This project uses Prisma ORM with Supabase PostgreSQL.
+
+### First Time Setup (Local Development)
+
+1. **Create `.env.local`** from `.env.example` with your Supabase credentials
+2. **Run migrations** to create database schema:
+
+```bash
+npx prisma migrate deploy
+```
+
+If you need to create a new migration after schema changes:
+
+```bash
+npx prisma migrate dev --name <migration_name>
+```
+
+### Database Schema
+
+View the schema: `prisma/schema.prisma`
+
+Key tables:
+- `User` - User accounts (email, password hash, phone, company)
+- `InventoryItem` - Available parts
+- `Order` - Customer orders
+- `OrderItem` - Line items in orders
+
+### Seed Database (Optional)
+
+```bash
+npx prisma db seed
+```
+
+### Troubleshooting Database Issues
+
+**Error: "The table 'public.User' does not exist"**
+
+This means Prisma migrations haven't been run yet. Solution:
+
+```bash
+# 1. Ensure .env.local has real Supabase credentials
+# 2. Run migrations
+npx prisma migrate deploy
+
+# 3. Or create a fresh migration if DB was reset
+npx prisma migrate dev --name init
+```
+
+**In production (Vercel):**
+
+Migrations run automatically during build. If they fail:
+1. Check Vercel logs for the error
+2. Manually run: `npx prisma migrate deploy` against production DB URL
+3. Verify in Supabase dashboard that tables exist
+
+**E2E tests failing with database errors:**
+
+The E2E tests now include form submission tests that verify API responses. If you see database-related failures:
+1. Ensure database is migrated locally: `npx prisma migrate deploy`
+2. Verify Supabase connection string in `.env.local`
+3. Check that ANON_KEY has permissions to insert users

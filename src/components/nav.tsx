@@ -17,15 +17,21 @@ export default function Nav({ userRole, userName }: NavProps) {
   const isActive = (path: string) =>
     pathname === path ? 'text-[#2E6DB4] font-semibold' : 'text-gray-600 hover:text-[#1B3A6B]'
 
+  const publicLinks = [
+    { href: '/', label: 'Services' },
+    { href: '/request-quote', label: 'Request Quote' },
+  ]
   const customerLinks = [
-    { href: '/inventory', label: 'Parts' },
-    { href: '/cart', label: 'Cart' },
-    { href: '/orders', label: 'My Orders' },
+    { href: '/orders', label: 'My Requests' },
   ]
   const adminLinks = [
     { href: '/admin/orders', label: 'Order Queue' },
   ]
-  const links = userRole ? (userRole === 'CUSTOMER' ? customerLinks : [...customerLinks, ...adminLinks]) : []
+  const links = userRole
+    ? userRole === 'CUSTOMER'
+      ? [...publicLinks, ...customerLinks]
+      : [...publicLinks, ...customerLinks, ...adminLinks]
+    : publicLinks
 
   return (
     <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">

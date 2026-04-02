@@ -6,9 +6,16 @@ export const runtime = 'nodejs'
 export async function POST(req: NextRequest) {
   try {
     const { email, name, company, phone } = await req.json()
+
+    if (!email || !name) {
+      return NextResponse.json({ error: 'Email and name are required' }, { status: 400 })
+    }
+
     const { prisma } = await import('@/lib/prisma')
-    const user = await prisma.user.create({
-      data: { email, name, company, phone },
+    const user = await prisma.user.upsert({
+      where: { email },
+      update: { name, company, phone },
+      create: { email, name, company, phone },
     })
     return NextResponse.json(user)
   } catch (error: unknown) {
