@@ -83,7 +83,7 @@ export default function RequestQuotePage() {
         form.partsNeeded.trim() &&
         form.repairContext.trim(),
     )
-  }, [authReady, form])
+  }, [form])
 
   const update = (field: keyof QuoteForm, value: string) => {
     setForm(prev => ({ ...prev, [field]: value }))

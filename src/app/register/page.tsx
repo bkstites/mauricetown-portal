@@ -1,12 +1,20 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { Truck } from 'lucide-react'
 
 export default function RegisterPage() {
+  return (
+    <Suspense fallback={<RegisterPageShell />}>
+      <RegisterPageContent />
+    </Suspense>
+  )
+}
+
+function RegisterPageContent() {
   const [form, setForm] = useState({ name: '', company: '', email: '', phone: '', password: '' })
   const [mfaOptIn, setMfaOptIn] = useState(true)
   const [error, setError] = useState('')
@@ -73,6 +81,62 @@ export default function RegisterPage() {
   }
 
   return (
+    <RegisterPageShell>
+      <form onSubmit={handleRegister} className="space-y-4">
+        {[
+          { name: 'name', label: 'Full Name', type: 'text', placeholder: 'John Smith', required: true },
+          { name: 'company', label: 'Company / Fleet Name', type: 'text', placeholder: 'Smith Trucking LLC', required: false },
+          { name: 'email', label: 'Email address', type: 'email', placeholder: 'you@company.com', required: true },
+          { name: 'phone', label: 'Phone Number', type: 'tel', placeholder: '(856) 555-0100', required: false },
+          { name: 'password', label: 'Password', type: 'password', placeholder: '••••••••', required: true },
+        ].map(field => (
+          <div key={field.name}>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {field.label} {field.required && <span className="text-red-500">*</span>}
+            </label>
+            <input
+              type={field.type}
+              required={field.required}
+              value={form[field.name as keyof typeof form]}
+              onChange={e => setForm({ ...form, [field.name]: e.target.value })}
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2E6DB4]"
+              placeholder={field.placeholder}
+            />
+          </div>
+        ))}
+
+        <div className="rounded-md border border-blue-200 bg-blue-50 p-3">
+          <label className="flex items-start gap-2 text-sm text-[#1B3A6B]">
+            <input
+              type="checkbox"
+              checked={mfaOptIn}
+              onChange={e => setMfaOptIn(e.target.checked)}
+              className="mt-0.5"
+            />
+            <span>
+              Enable MFA on this account (recommended).
+              <span className="block text-xs text-blue-700 mt-1">
+                You will be prompted to enroll an authenticator app during secure onboarding.
+              </span>
+            </span>
+          </label>
+        </div>
+
+        {error && <p className="text-red-600 text-sm bg-red-50 border border-red-200 rounded px-3 py-2">{error}</p>}
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-[#1B3A6B] hover:bg-[#2E6DB4] text-white font-semibold py-2 rounded-md transition-colors disabled:opacity-60"
+        >
+          {loading ? 'Creating account…' : 'Create Account'}
+        </button>
+      </form>
+    </RegisterPageShell>
+  )
+}
+
+function RegisterPageShell({ children }: { children?: React.ReactNode }) {
+  return (
     <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
@@ -84,55 +148,7 @@ export default function RegisterPage() {
         </div>
 
         <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-8">
-          <form onSubmit={handleRegister} className="space-y-4">
-            {[
-              { name: 'name', label: 'Full Name', type: 'text', placeholder: 'John Smith', required: true },
-              { name: 'company', label: 'Company / Fleet Name', type: 'text', placeholder: 'Smith Trucking LLC', required: false },
-              { name: 'email', label: 'Email address', type: 'email', placeholder: 'you@company.com', required: true },
-              { name: 'phone', label: 'Phone Number', type: 'tel', placeholder: '(856) 555-0100', required: false },
-              { name: 'password', label: 'Password', type: 'password', placeholder: '••••••••', required: true },
-            ].map(field => (
-              <div key={field.name}>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {field.label} {field.required && <span className="text-red-500">*</span>}
-                </label>
-                <input
-                  type={field.type}
-                  required={field.required}
-                  value={form[field.name as keyof typeof form]}
-                  onChange={e => setForm({ ...form, [field.name]: e.target.value })}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2E6DB4]"
-                  placeholder={field.placeholder}
-                />
-              </div>
-            ))}
-
-            <div className="rounded-md border border-blue-200 bg-blue-50 p-3">
-              <label className="flex items-start gap-2 text-sm text-[#1B3A6B]">
-                <input
-                  type="checkbox"
-                  checked={mfaOptIn}
-                  onChange={e => setMfaOptIn(e.target.checked)}
-                  className="mt-0.5"
-                />
-                <span>
-                  Enable MFA on this account (recommended).
-                  <span className="block text-xs text-blue-700 mt-1">
-                    You will be prompted to enroll an authenticator app during secure onboarding.
-                  </span>
-                </span>
-              </label>
-            </div>
-
-            {error && <p className="text-red-600 text-sm bg-red-50 border border-red-200 rounded px-3 py-2">{error}</p>}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-[#1B3A6B] hover:bg-[#2E6DB4] text-white font-semibold py-2 rounded-md transition-colors disabled:opacity-60"
-            >
-              {loading ? 'Creating account…' : 'Create Account'}
-            </button>
-          </form>
+          {children}
 
           <p className="text-center text-sm text-gray-500 mt-6">
             Already have an account?{' '}
