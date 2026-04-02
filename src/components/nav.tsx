@@ -22,14 +22,15 @@ export default function Nav({ userRole, userName }: NavProps) {
     { href: '/request-quote', label: 'Request Quote' },
   ]
   const customerLinks = [
-    { href: '/request-quote', label: 'Request Quote' },
     { href: '/orders', label: 'My Requests' },
   ]
   const adminLinks = [
     { href: '/admin/orders', label: 'Order Queue' },
   ]
   const links = userRole
-    ? (userRole === 'CUSTOMER' ? [...publicLinks, ...customerLinks] : [...publicLinks, ...customerLinks, ...adminLinks])
+    ? userRole === 'CUSTOMER'
+      ? [...publicLinks, ...customerLinks]
+      : [...publicLinks, ...customerLinks, ...adminLinks]
     : publicLinks
 
   return (

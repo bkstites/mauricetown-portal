@@ -1,6 +1,7 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { ClipboardCheck, Mail, Phone } from 'lucide-react'
 
 type QuoteForm = {
@@ -40,10 +41,39 @@ const initialForm: QuoteForm = {
 }
 
 export default function RequestQuotePage() {
+  const supabase = createClientComponentClient()
   const [form, setForm] = useState<QuoteForm>(initialForm)
   const [loading, setLoading] = useState(false)
+  const [authReady, setAuthReady] = useState(false)
   const [error, setError] = useState('')
   const [requestId, setRequestId] = useState('')
+
+  useEffect(() => {
+    let active = true
+
+    const loadUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      if (!active) {
+        return
+      }
+
+      setForm(prev => ({
+        ...prev,
+        email: user?.email ?? prev.email,
+        contactName: prev.contactName || (typeof user?.user_metadata?.name === 'string' ? user.user_metadata.name : ''),
+      }))
+      setAuthReady(true)
+    }
+
+    loadUser()
+
+    return () => {
+      active = false
+    }
+  }, [supabase.auth])
 
   const isValid = useMemo(() => {
     return Boolean(
@@ -53,7 +83,7 @@ export default function RequestQuotePage() {
         form.partsNeeded.trim() &&
         form.repairContext.trim(),
     )
-  }, [form])
+  }, [authReady, form])
 
   const update = (field: keyof QuoteForm, value: string) => {
     setForm(prev => ({ ...prev, [field]: value }))
@@ -122,7 +152,16 @@ export default function RequestQuotePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input id="contactName" label="Contact Name" value={form.contactName} onChange={v => update('contactName', v)} required />
               <Input id="shopName" label="Shop / Fleet Name" value={form.shopName} onChange={v => update('shopName', v)} required />
-              <Input id="email" label="Email" type="email" value={form.email} onChange={v => update('email', v)} required />
+              <Input
+                id="email"
+                label="Email"
+                type="email"
+                value={form.email}
+                onChange={v => update('email', v)}
+                required
+                readOnly
+                helperText="Requests are tied to the signed-in account email."
+              />
               <Input id="phone" label="Phone" type="tel" value={form.phone} onChange={v => update('phone', v)} />
             </div>
           </section>
@@ -213,7 +252,7 @@ export default function RequestQuotePage() {
             <p className="text-xs text-gray-500">After submission, associates receive this request in the quote queue for review and pricing.</p>
             <button
               type="submit"
-              disabled={loading || !isValid}
+              disabled={loading || !authReady || !isValid}
               className="bg-[#1B3A6B] hover:bg-[#2E6DB4] text-white font-semibold px-6 py-3 rounded-md transition-colors disabled:opacity-60"
             >
               {loading ? 'Submitting…' : 'Submit Quote Request'}
@@ -251,6 +290,8 @@ function Input({
   onChange,
   type = 'text',
   required = false,
+  readOnly = false,
+  helperText,
 }: {
   id?: string
   label: string
@@ -258,6 +299,8 @@ function Input({
   onChange: (value: string) => void
   type?: string
   required?: boolean
+  readOnly?: boolean
+  helperText?: string
 }) {
   return (
     <div>
@@ -268,8 +311,10 @@ function Input({
         value={value}
         onChange={e => onChange(e.target.value)}
         required={required}
-        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2E6DB4]"
+        readOnly={readOnly}
+        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2E6DB4] read-only:bg-gray-50 read-only:text-gray-500"
       />
+      {helperText ? <p className="mt-1 text-xs text-gray-500">{helperText}</p> : null}
     </div>
   )
 }

@@ -20,9 +20,14 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const user = await getRequestAppUser()
+    if (!user) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+    }
+
     const body = await req.json()
 
-    const requiredFields = ['contactName', 'shopName', 'email', 'partsNeeded', 'repairContext'] as const
+    const requiredFields = ['contactName', 'shopName', 'partsNeeded', 'repairContext'] as const
     for (const field of requiredFields) {
       if (!body[field] || String(body[field]).trim() === '') {
         return NextResponse.json({ error: `Missing required field: ${field}` }, { status: 400 })
@@ -32,7 +37,7 @@ export async function POST(req: NextRequest) {
     const created = await createQuoteRequest({
       contactName: String(body.contactName),
       shopName: String(body.shopName),
-      email: String(body.email),
+      email: user.email,
       phone: body.phone ? String(body.phone) : '',
       vehicleYear: body.vehicleYear ? String(body.vehicleYear) : '',
       vehicleMake: body.vehicleMake ? String(body.vehicleMake) : '',
