@@ -59,7 +59,34 @@ npm run test:e2e              # Run all E2E tests headlessly
 npm run test:e2e:ui          # Run E2E tests in UI mode (interactive)
 npm run lint                  # Lint code
 npm run build                 # Build for production
+npm run validate:pr           # Run the same local gate you should use before opening a PR
 ```
+
+### Pre-PR validation
+
+Before opening a PR, run:
+
+```bash
+npm run validate:pr
+```
+
+This runs the practical local gate in the same order the repo expects:
+
+1. Lint
+2. Production build
+3. Playwright E2E suite
+4. Critical production dependency audit
+5. Source-level secret scan for hard-coded database credentials
+
+If you changed database schema or auth flows, also validate these explicitly:
+
+```bash
+npx prisma migrate deploy
+git diff --check
+git status --short
+```
+
+Use `git status --short` to confirm `.env.local` is not part of the PR. This repo already ignores local env files.
 
 Initial status-check bootstrap completed for branch-protection setup.
 

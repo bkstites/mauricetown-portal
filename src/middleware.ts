@@ -4,13 +4,23 @@ import type { NextRequest } from 'next/server'
 
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next()
-  // Refresh session if needed
+
   try {
     const supabase = createMiddlewareClient({ req, res })
-    await supabase.auth.getSession()
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
+
+    if (!session) {
+      const loginUrl = req.nextUrl.clone()
+      loginUrl.pathname = '/login'
+      loginUrl.searchParams.set('next', req.nextUrl.pathname)
+      return NextResponse.redirect(loginUrl)
+    }
   } catch {
-    // Supabase not configured — allow all in POC mode
+    return res
   }
+
   return res
 }
 

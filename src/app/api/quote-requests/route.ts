@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getRequestAppUser, isStaffRole } from '@/lib/auth'
 import { createQuoteRequest, listQuoteRequests } from '@/lib/quote-store'
 import { sendEmail } from '@/lib/email'
 
@@ -6,9 +7,14 @@ export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 export async function GET(req: NextRequest) {
+  const user = await getRequestAppUser()
+  if (!user) {
+    return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+  }
+
   const { searchParams } = new URL(req.url)
   const status = searchParams.get('status')?.toUpperCase() ?? 'ALL'
-  const rows = await listQuoteRequests(status)
+  const rows = await listQuoteRequests(status, isStaffRole(user.role) ? undefined : { email: user.email })
   return NextResponse.json({ rows })
 }
 

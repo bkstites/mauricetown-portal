@@ -1,4 +1,6 @@
 import Link from 'next/link'
+import { notFound } from 'next/navigation'
+import { requireSignedInUser } from '@/lib/auth'
 import { getQuoteRequestById } from '@/lib/quote-store'
 
 const STATUS_STYLES: Record<string, string> = {
@@ -10,10 +12,11 @@ const STATUS_STYLES: Record<string, string> = {
 }
 
 export default async function OrderDetailPage({ params }: { params: { id: string } }) {
-  const row = await getQuoteRequestById(params.id)
+  const user = await requireSignedInUser()
+  const row = await getQuoteRequestById(params.id, { email: user.email })
 
   if (!row) {
-    return <div className="max-w-3xl mx-auto px-4 py-10 text-sm text-red-600">Quote request not found.</div>
+    notFound()
   }
 
   return (

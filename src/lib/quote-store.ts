@@ -38,6 +38,10 @@ type QuoteRequestPatch = {
   quoteNotes?: string
 }
 
+type QuoteRequestFilters = {
+  email?: string
+}
+
 const memoryKey = '__mt_quote_requests__'
 const fallbackDir = path.join(process.cwd(), '.tmp')
 const fallbackFile = path.join(fallbackDir, 'quote-requests.json')
@@ -188,29 +192,39 @@ export async function createQuoteRequest(input: QuoteRequestInput): Promise<Quot
   }
 }
 
-export async function listQuoteRequests(status?: string): Promise<QuoteRequestRecord[]> {
+export async function listQuoteRequests(status?: string, filters?: QuoteRequestFilters): Promise<QuoteRequestRecord[]> {
   try {
     const rows = await prisma.quoteRequest.findMany({
-      where: status && status !== 'ALL' ? { status: status as QuoteStatus } : undefined,
+      where: {
+        ...(status && status !== 'ALL' ? { status: status as QuoteStatus } : {}),
+        ...(filters?.email ? { email: filters.email } : {}),
+      },
       orderBy: { createdAt: 'desc' },
     })
     return rows.map(serializeDbRecord)
   } catch {
     const store = readFallbackStore()
+    const filteredByEmail = filters?.email ? store.filter(r => r.email === filters.email) : store
+
     if (!status || status === 'ALL') {
-      return store
+      return filteredByEmail
     }
-    return store.filter(r => r.status === status)
+    return filteredByEmail.filter(r => r.status === status)
   }
 }
 
-export async function getQuoteRequestById(id: string): Promise<QuoteRequestRecord | null> {
+export async function getQuoteRequestById(id: string, filters?: QuoteRequestFilters): Promise<QuoteRequestRecord | null> {
   try {
-    const row = await prisma.quoteRequest.findUnique({ where: { id } })
+    const row = await prisma.quoteRequest.findFirst({
+      where: {
+        id,
+        ...(filters?.email ? { email: filters.email } : {}),
+      },
+    })
     return row ? serializeDbRecord(row) : null
   } catch {
     const store = readFallbackStore()
-    return store.find(r => r.id === id) ?? null
+    return store.find(r => r.id === id && (!filters?.email || r.email === filters.email)) ?? null
   }
 }
 

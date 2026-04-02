@@ -8,6 +8,10 @@
     "vercel-build": "prisma migrate deploy && prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
+    "check:audit": "npm audit --omit=dev --audit-level=critical",
+    "check:secrets": "git grep -nE 'postgresql://[^\"[:space:]]+:[^\"@[:space:]]{6,}@' -- '*.ts' '*.tsx' '*.js' '*.jsx' 2>/dev/null | grep -vE 'placeholder|localhost|example\\.com' && exit 1 || exit 0",
+    "provision:test-accounts": "node scripts/provision-test-accounts.cjs",
+    "validate:pr": "npm run lint && npm run build && npm run test:e2e && npm run check:audit && npm run check:secrets",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui"
   },

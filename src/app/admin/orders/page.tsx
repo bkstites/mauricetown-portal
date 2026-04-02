@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
+import { requireStaffUser } from '@/lib/auth'
 import { listQuoteRequests } from '@/lib/quote-store'
 
 const STATUS_STYLES: Record<string, string> = {
@@ -13,6 +14,7 @@ const STATUS_STYLES: Record<string, string> = {
 const TABS = ['ALL', 'PENDING', 'REVIEWING', 'QUOTED', 'APPROVED', 'REJECTED']
 
 export default async function AdminOrderQueue({ searchParams }: { searchParams: { status?: string } }) {
+  await requireStaffUser()
   const activeTab = (searchParams.status || 'ALL').toUpperCase()
   const rows = await listQuoteRequests(activeTab)
 

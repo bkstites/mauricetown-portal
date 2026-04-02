@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getRequestAppUser, isStaffRole } from '@/lib/auth'
 import { getQuoteRequestById, updateQuoteRequestById } from '@/lib/quote-store'
 import { sendEmail } from '@/lib/email'
 
@@ -6,7 +7,12 @@ export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
-  const row = await getQuoteRequestById(params.id)
+  const user = await getRequestAppUser()
+  if (!user) {
+    return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+  }
+
+  const row = await getQuoteRequestById(params.id, isStaffRole(user.role) ? undefined : { email: user.email })
   if (!row) {
     return NextResponse.json({ error: 'Quote request not found' }, { status: 404 })
   }
@@ -15,6 +21,15 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   try {
+    const user = await getRequestAppUser()
+    if (!user) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+    }
+
+    if (!isStaffRole(user.role)) {
+      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
+    }
+
     const body = await req.json()
     const status = body.status ? String(body.status).toUpperCase() : undefined
     const quoteTotal = body.quoteTotal !== undefined && body.quoteTotal !== null

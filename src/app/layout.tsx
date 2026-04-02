@@ -2,8 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import Nav from '@/components/nav'
-import { cookies } from 'next/headers'
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
+import { getCurrentAppUser } from '@/lib/auth'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
@@ -13,21 +12,9 @@ export const metadata: Metadata = {
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  let userRole: string | null = null
-  let userName: string | null = null
-
-  try {
-    const supabase = createServerComponentClient({ cookies })
-    const { data: { user } } = await supabase.auth.getUser()
-    if (user) {
-      const { prisma } = await import('@/lib/prisma')
-      const dbUser = await prisma.user.findUnique({ where: { email: user.email! } })
-      userRole = dbUser?.role ?? 'CUSTOMER'
-      userName = dbUser?.name ?? user.email ?? null
-    }
-  } catch {
-    // Supabase not configured — POC mode
-  }
+  const user = await getCurrentAppUser()
+  const userRole = user?.role ?? null
+  const userName = user?.name ?? null
 
   return (
     <html lang="en" className={inter.variable}>

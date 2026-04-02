@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
+import { requireSignedInUser } from '@/lib/auth'
 import { listQuoteRequests } from '@/lib/quote-store'
 
 const STATUS_STYLES: Record<string, string> = {
@@ -11,7 +12,8 @@ const STATUS_STYLES: Record<string, string> = {
 }
 
 export default async function OrdersPage() {
-  const rows = await listQuoteRequests('ALL')
+  const user = await requireSignedInUser()
+  const rows = await listQuoteRequests('ALL', { email: user.email })
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
